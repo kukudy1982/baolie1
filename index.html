@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>狂人1爆裂档位计算表</title>
+    <style>
+        :root {
+            --primary-color: #1a237e;
+            --secondary-color: #3f51b5;
+            --result-color: #0d47a1;
+            --error-color: #d32f2f;
+            --bg-color: #f5f5f5;
+            --panel-bg: white;
+            --selected-color: #3f51b5;
+            --not-selected-color: #cccccc;
+            --instruction-bg: #ffebee; /* 浅红色背景 */
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: var(--bg-color);
+        }
+
+        .calculator {
+            background: var(--panel-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .mode-switch {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .mode-toggle {
+            display: flex;
+            overflow: hidden;
+            border-radius: 20px;
+            height: 40px;
+            font-size: 15px;
+            flex-grow: 1;
+        }
+
+        .toggle-option {
+            padding: 10px 20px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            min-width: 100px;
+        }
+
+        .selected {
+            background-color: var(--selected-color);
+            color: white;
+            font-weight: bold;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+        }
+
+        .not-selected {
+            background-color: var(--not-selected-color);
+            color: #666;
+        }
+
+        .input-group {
+            margin-bottom: 10px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .collapsible-group {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .collapsible-header {
+            background-color: #f8f9fa;
+            padding: 12px 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .collapsible-header:hover {
+            background-color: #e8eaf6;
+        }
+
+        .collapsible-title {
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+
+        .collapsible-value {
+            font-weight: bold;
+            color: var(--secondary-color);
+            margin: 0 15px;
+        }
+
+        .arrow-container {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+        }
+
+        .arrow-up {
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 12px solid var(--selected-color);
+            transform: rotate(180deg);
+            margin-left: 5px;
+        }
+
+        .arrow-down {
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 12px solid var(--selected-color);
+            margin-left: 5px;
+        }
+
+        .collapsible-content {
+            display: none;
+            padding: 15px;
+            background-color: #fff;
+            border-top: 1px solid #eee;
+        }
+
+        .collapsible-group.expanded .collapsible-content {
+            display: block;
+        }
+
+        .two-column-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        label {
+            font-weight: bold;
+            color: #333;
+            position: relative;
+            cursor: help;
+        }
+
+        .tooltip {
+            display: none;
+            position: absolute;
+            bottom: 120%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 1000;
+        }
+
+        label:hover .tooltip {
+            display: block;
+        }
+
+        input, select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .instructions {
+            background-color: var(--instruction-bg);
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .instructions p {
+            margin: 10px 0;
+            color: var(--result-color);
+        }
+
+        .result {
+            margin: 20px 0 30px;
+            padding: 15px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            font-size: 1.2em;
+        }
+
+        /* 隐藏最终额外攻速 */
+        #finalAttackSpeedContainer {
+            display: none;
+        }
+
+        h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+            margin-top: 25px;
+        }
+
+        [data-mode="simulation"] { display: none; }
+        .simulation-mode [data-mode="basic"] { display: none; }
+        .simulation-mode [data-mode="simulation"] { display: block; }
+        
+        /* 添加按钮的样式 */
+        .reset-button {
+            margin-left: auto;
+            padding: 8px 16px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        
+        .reset-button:hover {
+            background-color: #d32f2f;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 600px) {
+            .input-group {
+                grid-template-columns: 1fr;
+            }
+            
+            .two-column-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .mode-switch {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .mode-toggle {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div class="mode-switch">
+            <div class="mode-toggle">
+                <div class="toggle-option selected" id="basic-mode">基础模式</div>
+                <div class="toggle-option not-selected" id="simulation-mode">模拟模式</div>
+            </div>
+            <button class="reset-button" id="resetButton">恢复默认值</button>
+        </div>
+
+        <!-- 使用说明部分 -->
+        <h2>使用说明</h2>
+        <div class="instructions">
+            <p>按照面板抄</p>
+        </div>
+
+        <h2>即时计算结果</h2>
+        <div class="result">
+            <div id="finalAttackSpeedContainer">🏹 最终额外攻速：<span id="finalAttackSpeed" style="color: #d32f2f;">0%</span></div>
+            <div>
+                ⏳ 最终冷却：<span id="finalCoolingResult" style="color: #00796b;">0%</span>
+                <div id="coolingCalculation" style="margin-top: 5px; font-size: 0.9em;"></div>
+            </div>
+        </div>
+
+        <h2>属性参数设置</h2>
+        
+        <!-- 基础模式 -->
+        <div data-mode="basic">
+            <div class="input-group">
+                <label>
+                    面板攻速（%）：
+                    <span class="tooltip">请打开游戏面板，按照上面的数值输入</span>
+                </label>
+                <input type="number" id="attackSpeed" value="300" min="0" step="0.01">
+            </div>
+            <div class="input-group">
+                <label>
+                    面板额外攻速（%）：
+                    <span class="tooltip">请打开游戏面板，按照上面的数值输入</span>
+                </label>
+                <input type="number" id="extraAttackSpeed" value="42" min="0" step="0.01">
+            </div>
+            <div class="input-group">
+                <label>
+                    面板冷却（%）：
+                    <span class="tooltip">请打开游戏面板，按照上面的数值输入</span>
+                </label>
+                <input type="number" id="cooling" value="16" min="0" step="0.01">
+            </div>
+        </div>
+
+        <!-- 模拟模式 -->
+        <div data-mode="simulation">
+            <div class="collapsible-group" id="attack-speed-group">
+                <div class="collapsible-header" onclick="toggleCollapse('attack-speed-group')">
+                    <span class="collapsible-title">攻速构成（%）</span>
+                    <span class="collapsible-value" id="attack-speed-value">0%</span>
+                    <div class="arrow-container">
+                        <span class="arrow-down" id="attack-speed-arrow"></span>
+                    </div>
+                </div>
+                <div class="collapsible-content">
+                    <div class="two-column-grid">
+                        <div class="input-group">
+                            <label>装备攻速：</label>
+                            <input type="number" id="equipAS" value="100" min="0" step="0.01">
+                        </div>
+                        <div class="input-group">
+                            <label>天赋攻速：</label>
+                            <input type="number" id="talentAS" value="50" min="0" step="0.01">
+                        </div>
+                        <div class="input-group">
+                            <label>神格攻速：</label>
+                            <input type="number" id="godhoodAS" value="30" min="0" step="0.01">
+                        </div>
+                        <div class="input-group">
+                            <label>契约攻速：</label>
+                            <input type="number" id="contractAS" value="20" min="0" step="0.01">
+                        </div>
+                        <div class="input-group">
+                            <label>追忆攻速：</label>
+                            <input type="number" id="memoryAS" value="80" min="0" step="0.01">
+                        </div>
+                        <div class="input-group">
+                            <label>蜡烛攻速：</label>
+                            <input type="number" id="candleAS" value="20" min="0" step="0.01">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="collapsible-group" id="extra-attack-speed-group">
+                <div class="collapsible-header" onclick="toggleCollapse('extra-attack-speed-group')">
+                    <span class="collapsible-title">额外攻速构成（%）</span>
+                    <span class="collapsible-value" id="extra-attack-speed-value">0%</span>
+                    <div class="arrow-container">
+                        <span class="arrow-down" id="extra-attack-speed-arrow"></span>
+                    </div>
+                </div>
+                <div class="collapsible-content">
+                    <div class="input-group">
+                        <label>权衡轻重：</label>
+                        <select id="balanceWeight">
+                            <option value="0">无</option>
+                            <option value="25">有</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>魔灵加成：</label>
+                        <span id="spiritBonus" style="font-weight: bold;">0%</span>
+                    </div>
+                    <div class="collapsible-group" id="spirit-bonus-group">
+                        <div class="collapsible-header" onclick="toggleCollapse('spirit-bonus-group')">
+                            <span class="collapsible-title">魔灵加成详情</span>
+                            <div class="arrow-container">
+                                <span class="arrow-down" id="spirit-bonus-arrow"></span>
+                            </div>
+                        </div>
+                        <div class="collapsible-content">
+                            <div class="input-group">
+                                <label>雷魔灵基础加成：</label>
+                                <input type="number" id="thunderSpirit" value="10" min="0" step="0.01">
+                            </div>
+                            <div class="input-group">
+                                <label>超能共生：</label>
+                                <input type="number" id="superEnergy" value="53" min="0" step="0.01">
+                            </div>
+                            <div class="input-group">
+                                <label>魔灵之友：</label>
+                                <input type="number" id="spiritFriend" value="56" min="0" step="0.01">
+                            </div>
+                            <div class="input-group">
+                                <label>契约：</label>
+                                <input type="number" id="spiritContract" value="68" min="0" step="0.01">
+                            </div>
+                            <div class="input-group">
+                                <label>其他：</label>
+                                <input type="number" id="otherSpirit" value="6" min="0" step="0.01">
+                            </div>
+                            <div class="input-group">
+                                <label>源泉：</label>
+                                <select id="spring">
+                                    <option value="100">无</option>
+                                    <option value="130" selected>有</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>其他：</label>
+                        <input type="number" id="otherBonus" value="0" min="0" step="0.01">
+                    </div>
+                </div>
+            </div>
+
+            <div class="collapsible-group" id="cooling-group">
+                <div class="collapsible-header" onclick="toggleCollapse('cooling-group')">
+                    <span class="collapsible-title">冷却构成（%）</span>
+                    <span class="collapsible-value" id="cooling-value">0%</span>
+                    <div class="arrow-container">
+                        <span class="arrow-down" id="cooling-arrow"></span>
+                    </div>
+                </div>
+                <div class="collapsible-content">
+                    <div class="input-group">
+                        <label>装备冷却：</label>
+                        <input type="number" id="equipCD" value="10" min="0" step="0.01">
+                    </div>
+                    <div class="input-group">
+                        <label>天赋冷却：</label>
+                        <input type="number" id="talentCD" value="5" min="0" step="0.01">
+                    </div>
+                    <div class="input-group">
+                        <label>其他冷却：</label>
+                        <input type="number" id="otherCD" value="1" min="0" step="0.01">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 公共参数 -->
+        <div class="input-group">
+            <label>灵动祝福层数：</label>
+            <input type="number" id="blessingStacks" value="4" min="0" step="1">
+        </div>
+        <div class="input-group">
+            <label>暴击额外条数：</label>
+            <input type="number" id="critExtra" value="2" min="0" step="1">
+        </div>
+        <div class="input-group">
+            <label>狂人1特性（%）：</label>
+            <input type="number" id="madmanTrait" value="120" min="0" step="0.01">
+        </div>
+    </div>
+
+    <script>
+        class GameCalculator {
+            static inputs = {
+                // 基础模式
+                basic: {
+                    attackSpeed: document.getElementById('attackSpeed'),
+                    extraAttackSpeed: document.getElementById('extraAttackSpeed'),
+                    cooling: document.getElementById('cooling')
+                },
+                // 模拟模式
+                simulation: {
+                    attackSpeed: [
+                        'equipAS', 'talentAS', 'godhoodAS', 
+                        'contractAS', 'memoryAS', 'candleAS'
+                    ],
+                    extraAttackSpeed: [
+                        'balanceWeight', 'spiritBonus', 'otherBonus'
+                    ],
+                    cooling: [
+                        'equipCD', 'talentCD', 'otherCD'
+                    ],
+                    spiritDetail: [
+                        'thunderSpirit', 'superEnergy', 'spiritFriend', 
+                        'spiritContract', 'otherSpirit', 'spring'
+                    ]
+                },
+                // 公共参数
+                common: {
+                    blessingStacks: document.getElementById('blessingStacks'),
+                    critExtra: document.getElementById('critExtra'),
+                    madmanTrait: document.getElementById('madmanTrait')
+                }
+            };
+
+            static currentMode = 'basic';
+
+            static getValues() {
+                const values = {
+                    attackSpeed: 0,
+                    extraAttackSpeed: 0,
+                    cooling: 0,
+                    blessingStacks: parseInt(this.inputs.common.blessingStacks.value),
+                    critExtra: parseInt(this.inputs.common.critExtra.value),
+                    madmanTrait: parseFloat(this.inputs.common.madmanTrait.value) / 100
+                };
+
+                if (this.currentMode === 'basic') {
+                    values.attackSpeed = parseFloat(this.inputs.basic.attackSpeed.value) / 100;
+                    values.extraAttackSpeed = parseFloat(this.inputs.basic.extraAttackSpeed.value) / 100;
+                    values.cooling = parseFloat(this.inputs.basic.cooling.value) / 100;
+                } else {
+                    // 计算模拟模式各属性
+                    values.attackSpeed = this.inputs.simulation.attackSpeed
+                        .reduce((sum, id) => sum + parseFloat(document.getElementById(id).value), 0) / 100;
+                    
+                    // 计算魔灵加成
+                    const thunderSpirit = parseFloat(document.getElementById('thunderSpirit').value) || 0;
+                    const superEnergy = parseFloat(document.getElementById('superEnergy').value) || 0;
+                    const spiritFriend = parseFloat(document.getElementById('spiritFriend').value) || 0;
+                    const spiritContract = parseFloat(document.getElementById('spiritContract').value) || 0;
+                    const otherSpirit = parseFloat(document.getElementById('otherSpirit').value) || 0;
+                    const spring = parseFloat(document.getElementById('spring').value) / 100;
+
+                    const spiritBonus = thunderSpirit * (1 + (superEnergy + spiritFriend + spiritContract + otherSpirit) * spring / 100);
+                    document.getElementById('spiritBonus').textContent = spiritBonus.toFixed(2) + '%';
+
+                    // 获取权衡轻重和其他加成的值
+                    const balanceWeight = parseFloat(document.getElementById('balanceWeight').value) / 100;
+                    const otherBonus = parseFloat(document.getElementById('otherBonus').value) / 100;
+
+                    // 新的乘法叠加公式
+                    values.extraAttackSpeed = (1 + balanceWeight) * (1 + spiritBonus / 100) * (1 + otherBonus) - 1;
+                    
+                    values.cooling = this.inputs.simulation.cooling
+                        .reduce((sum, id) => sum + parseFloat(document.getElementById(id).value), 0) / 100;
+                }
+
+                return values;
+            }
+
+            static calculateFinalAttackSpeed(values) {
+                return (values.extraAttackSpeed + 1) * Math.pow(1.10, values.critExtra) - 1;
+            }
+
+            static calculateCooling(values, finalAttackSpeed) {
+                const part1 = 1 + (values.attackSpeed + values.blessingStacks * 0.04) * values.madmanTrait;
+                const part2 = (1 + finalAttackSpeed * values.madmanTrait) * (1 + values.cooling);
+                return part1 * part2 - 1;
+            }
+
+            static formatResult(value) {
+                return (value * 100).toFixed(2).replace(/\.00$/, '') + '%';
+            }
+        }
+
+        const ResultUI = {
+            update() {
+                const values = GameCalculator.getValues();
+                const attackSpeed = GameCalculator.calculateFinalAttackSpeed(values);
+                const cooling = GameCalculator.calculateCooling(values, attackSpeed);
+                
+                document.getElementById('finalAttackSpeed').textContent = 
+                    GameCalculator.formatResult(attackSpeed);
+                document.getElementById('finalCoolingResult').textContent = 
+                    GameCalculator.formatResult(cooling);
+                
+                // 更新折叠组的当前计算值
+                updateGroupValue('attack-speed-group', GameCalculator.inputs.simulation.attackSpeed, 'attack-speed-value');
+                
+                // 更新魔灵加成值
+                const thunderSpirit = parseFloat(document.getElementById('thunderSpirit').value) || 0;
+                const superEnergy = parseFloat(document.getElementById('superEnergy').value) || 0;
+                const spiritFriend = parseFloat(document.getElementById('spiritFriend').value) || 0;
+                const spiritContract = parseFloat(document.getElementById('spiritContract').value) || 0;
+                const otherSpirit = parseFloat(document.getElementById('otherSpirit').value) || 0;
+                const spring = parseFloat(document.getElementById('spring').value) / 100;
+
+                const spiritBonus = thunderSpirit * (1 + (superEnergy + spiritFriend + spiritContract + otherSpirit) * spring / 100);
+                document.getElementById('spiritBonus').textContent = spiritBonus.toFixed(2) + '%';
+
+                // 获取权衡轻重和其他加成的值
+                const balanceWeight = parseFloat(document.getElementById('balanceWeight').value) / 100;
+                const otherBonus = parseFloat(document.getElementById('otherBonus').value) / 100;
+
+                // 新的乘法叠加公式
+                const extraAttackSpeedValue = (
+                    (1 + balanceWeight) * 
+                    (1 + spiritBonus / 100) * 
+                    (1 + otherBonus) - 
+                    1
+                ) * 100;
+
+                document.getElementById('extra-attack-speed-value').textContent = extraAttackSpeedValue.toFixed(2) + '%';
+                
+                updateGroupValue('cooling-group', GameCalculator.inputs.simulation.cooling, 'cooling-value');
+                
+                // 添加冷却计算过程的注释
+                const calculationProcess = `
+冷却时间 = ((1 + (${values.attackSpeed * 100}% + ${values.blessingStacks} * 4%) * ${values.madmanTrait * 100}%) * ((1 + ${(attackSpeed * 100).toFixed(2)}% * ${values.madmanTrait * 100}%) * (1 + ${values.cooling * 100}%)) - 1) = ${(cooling * 100).toFixed(2)}%
+`;
+
+                document.getElementById('coolingCalculation').textContent = calculationProcess;
+            },
+
+            init() {
+                // 模式切换事件
+                document.getElementById('basic-mode').addEventListener('click', () => {
+                    GameCalculator.currentMode = 'basic';
+                    document.getElementById('basic-mode').classList.add('selected');
+                    document.getElementById('basic-mode').classList.remove('not-selected');
+                    document.getElementById('simulation-mode').classList.remove('selected');
+                    document.getElementById('simulation-mode').classList.add('not-selected');
+                    document.body.classList.remove('simulation-mode');
+                    this.update();
+                });
+
+                document.getElementById('simulation-mode').addEventListener('click', () => {
+                    GameCalculator.currentMode = 'simulation';
+                    document.getElementById('basic-mode').classList.remove('selected');
+                    document.getElementById('basic-mode').classList.add('not-selected');
+                    document.getElementById('simulation-mode').classList.add('selected');
+                    document.getElementById('simulation-mode').classList.remove('not-selected');
+                    document.body.classList.add('simulation-mode');
+                    this.update();
+                });
+
+                // 所有输入事件
+                const allInputs = [
+                    ...Object.values(GameCalculator.inputs.basic),
+                    ...GameCalculator.inputs.simulation.attackSpeed,
+                    ...GameCalculator.inputs.simulation.extraAttackSpeed,
+                    ...GameCalculator.inputs.simulation.cooling,
+                    ...GameCalculator.inputs.simulation.spiritDetail,
+                    ...Object.values(GameCalculator.inputs.common)
+                ];
+
+                allInputs.forEach(input => {
+                    if (typeof input === 'string') {
+                        const inputElement = document.getElementById(input);
+                        if (inputElement) {
+                            inputElement.addEventListener('input', (e) => {
+                                const value = parseFloat(e.target.value);
+                                // 确保不会输入负数
+                                if (value < 0) {
+                                    e.target.value = 0;
+                                }
+                                this.update();
+                            });
+                            inputElement.addEventListener('blur', this.handleBlur);
+                        }
+                    } else {
+                        input.addEventListener('input', () => this.update());
+                        input.addEventListener('blur', this.handleBlur);
+                    }
+                });
+
+                // 添加重置按钮事件
+                document.getElementById('resetButton').addEventListener('click', () => {
+                    // 恢复基础模式的默认值
+                    if (GameCalculator.currentMode === 'basic') {
+                        GameCalculator.inputs.basic.attackSpeed.value = 300;
+                        GameCalculator.inputs.basic.extraAttackSpeed.value = 42;
+                        GameCalculator.inputs.basic.cooling.value = 16;
+                    } else {
+                        // 恢复模拟模式的默认值
+                        document.getElementById('equipAS').value = 100;
+                        document.getElementById('talentAS').value = 50;
+                        document.getElementById('godhoodAS').value = 30;
+                        document.getElementById('contractAS').value = 20;
+                        document.getElementById('memoryAS').value = 80;
+                        document.getElementById('candleAS').value = 20;
+                        
+                        document.getElementById('balanceWeight').selectedIndex = 0;
+                        document.getElementById('spiritBonus').textContent = '0%';
+                        document.getElementById('otherBonus').value = 0;
+                        
+                        document.getElementById('thunderSpirit').value = 10;
+                        document.getElementById('superEnergy').value = 53;
+                        document.getElementById('spiritFriend').value = 56;
+                        document.getElementById('spiritContract').value = 68;
+                        document.getElementById('otherSpirit').value = 6;
+                        document.getElementById('spring').selectedIndex = 1;
+                        
+                        document.getElementById('equipCD').value = 10;
+                        document.getElementById('talentCD').value = 5;
+                        document.getElementById('otherCD').value = 1;
+                    }
+                    
+                    // 恢复公共参数的默认值
+                    GameCalculator.inputs.common.blessingStacks.value = 4;
+                    GameCalculator.inputs.common.critExtra.value = 2;
+                    GameCalculator.inputs.common.madmanTrait.value = 120;
+                    
+                    // 更新计算结果
+                    this.update();
+                });
+            },
+
+            handleBlur(e) {
+                const input = e.target;
+                let value = parseFloat(input.value) || 0;
+                value = Math.max(value, input.min ? parseFloat(input.min) : 0);
+                input.value = value;
+            }
+        };
+
+        function updateGroupValue(groupId, inputIds, valueElementId) {
+            const sum = inputIds.reduce((total, id) => {
+                const value = parseFloat(document.getElementById(id).value) || 0;
+                return total + value;
+            }, 0);
+            
+            document.getElementById(valueElementId).textContent = sum + '%';
+        }
+
+        function toggleCollapse(groupId) {
+            const group = document.getElementById(groupId);
+            group.classList.toggle('expanded');
+            
+            // 更新箭头方向
+            const arrowElementId = groupId + '-arrow';
+            const arrowElement = document.getElementById(arrowElementId);
+            
+            if (group.classList.contains('expanded')) {
+                arrowElement.className = 'arrow-up';
+            } else {
+                arrowElement.className = 'arrow-down';
+            }
+            
+            ResultUI.update();
+        }
+
+        // 初始展开第一个分组
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始不展开攻速构成
+            // document.getElementById('attack-speed-group').classList.add('expanded');
+            // document.getElementById('attack-speed-arrow').className = 'arrow-up';
+        });
+
+        ResultUI.init();
+        ResultUI.update();
+    </script>
+</body>
+</html>
