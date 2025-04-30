@@ -27,8 +27,8 @@
         .calculator {
             background: var(--panel-bg);
             padding: 20px;
-            border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 0; /* 修改为直角 */
         }
 
         .mode-switch {
@@ -42,10 +42,10 @@
         .mode-toggle {
             display: flex;
             overflow: hidden;
-            border-radius: 20px;
             height: 40px;
             font-size: 15px;
             flex-grow: 1;
+            border-radius: 0; /* 修改为直角 */
         }
 
         .toggle-option {
@@ -78,9 +78,9 @@
 
         .collapsible-group {
             border: 1px solid #ddd;
-            border-radius: 4px;
             margin: 10px 0;
             overflow: hidden;
+            border-radius: 0; /* 修改为直角 */
         }
 
         .collapsible-header {
@@ -90,6 +90,7 @@
             display: flex;
             align-items: center;
             transition: background-color 0.3s ease;
+            border-radius: 0; /* 修改为直角 */
         }
 
         .collapsible-header:hover {
@@ -138,6 +139,7 @@
             padding: 15px;
             background-color: #fff;
             border-top: 1px solid #eee;
+            border-radius: 0; /* 修改为直角 */
         }
 
         .collapsible-group.expanded .collapsible-content {
@@ -155,6 +157,7 @@
             color: #333;
             position: relative;
             cursor: help;
+            border-radius: 0; /* 修改为直角 */
         }
 
         .tooltip {
@@ -166,7 +169,7 @@
             background-color: #333;
             color: #fff;
             padding: 5px 10px;
-            border-radius: 4px;
+            border-radius: 0; /* 修改为直角 */
             font-size: 12px;
             white-space: nowrap;
             z-index: 1000;
@@ -179,16 +182,16 @@
         input, select {
             padding: 8px;
             border: 1px solid #ddd;
-            border-radius: 4px;
             width: 100%;
             box-sizing: border-box;
+            border-radius: 0; /* 修改为直角 */
         }
 
         .instructions {
             background-color: var(--instruction-bg);
             padding: 15px;
-            border-radius: 4px;
             margin-bottom: 20px;
+            border-radius: 0; /* 修改为直角 */
         }
 
         .instructions p {
@@ -200,7 +203,7 @@
             margin: 20px 0 30px;
             padding: 15px;
             background-color: #e3f2fd;
-            border-radius: 4px;
+            border-radius: 0; /* 修改为直角 */
             font-size: 1.2em;
         }
 
@@ -227,10 +230,10 @@
             background-color: #f44336;
             color: white;
             border: none;
-            border-radius: 4px;
             cursor: pointer;
             font-weight: bold;
             transition: background-color 0.3s ease;
+            border-radius: 0; /* 修改为直角 */
         }
         
         .reset-button:hover {
@@ -256,6 +259,16 @@
                 width: 100%;
             }
         }
+
+        /* 新增档次显示样式 */
+        .damage-per-second {
+            margin-left: 20px;
+            font-weight: bold;
+        }
+
+        .damage-per-second-error {
+            color: var(--error-color);
+        }
     </style>
 </head>
 <body>
@@ -268,17 +281,12 @@
             <button class="reset-button" id="resetButton">恢复默认值</button>
         </div>
 
-        <!-- 使用说明部分 -->
-        <h2>使用说明</h2>
-        <div class="instructions">
-            <p>按照面板抄</p>
-        </div>
-
         <h2>即时计算结果</h2>
         <div class="result">
             <div id="finalAttackSpeedContainer">🏹 最终额外攻速：<span id="finalAttackSpeed" style="color: #d32f2f;">0%</span></div>
             <div>
                 ⏳ 最终冷却：<span id="finalCoolingResult" style="color: #00796b;">0%</span>
+                <span id="damagePerSecond" class="damage-per-second"></span>
                 <div id="coolingCalculation" style="margin-top: 5px; font-size: 0.9em;"></div>
             </div>
         </div>
@@ -292,21 +300,21 @@
                     面板攻速（%）：
                     <span class="tooltip">请打开游戏面板，按照上面的数值输入</span>
                 </label>
-                <input type="number" id="attackSpeed" value="300" min="0" step="0.01">
+                <input type="number" id="attackSpeed" value="171" min="0" step="0.01">
             </div>
             <div class="input-group">
                 <label>
                     面板额外攻速（%）：
                     <span class="tooltip">请打开游戏面板，按照上面的数值输入</span>
                 </label>
-                <input type="number" id="extraAttackSpeed" value="42" min="0" step="0.01">
+                <input type="number" id="extraAttackSpeed" value="46" min="0" step="0.01">
             </div>
             <div class="input-group">
                 <label>
                     面板冷却（%）：
                     <span class="tooltip">请打开游戏面板，按照上面的数值输入</span>
                 </label>
-                <input type="number" id="cooling" value="16" min="0" step="0.01">
+                <input type="number" id="cooling" value="30" min="0" step="0.01">
             </div>
         </div>
 
@@ -324,27 +332,27 @@
                     <div class="two-column-grid">
                         <div class="input-group">
                             <label>装备攻速：</label>
-                            <input type="number" id="equipAS" value="100" min="0" step="0.01">
+                            <input type="number" id="equipAS" value="50" min="0" step="0.01">
                         </div>
                         <div class="input-group">
                             <label>天赋攻速：</label>
-                            <input type="number" id="talentAS" value="50" min="0" step="0.01">
+                            <input type="number" id="talentAS" value="42" min="0" step="0.01">
                         </div>
                         <div class="input-group">
                             <label>神格攻速：</label>
-                            <input type="number" id="godhoodAS" value="30" min="0" step="0.01">
+                            <input type="number" id="godhoodAS" value="3" min="0" step="0.01">
                         </div>
                         <div class="input-group">
                             <label>契约攻速：</label>
-                            <input type="number" id="contractAS" value="20" min="0" step="0.01">
+                            <input type="number" id="contractAS" value="32" min="0" step="0.01">
                         </div>
                         <div class="input-group">
                             <label>追忆攻速：</label>
-                            <input type="number" id="memoryAS" value="80" min="0" step="0.01">
+                            <input type="number" id="memoryAS" value="44" min="0" step="0.01">
                         </div>
                         <div class="input-group">
                             <label>蜡烛攻速：</label>
-                            <input type="number" id="candleAS" value="20" min="0" step="0.01">
+                            <input type="number" id="candleAS" value="0" min="0" step="0.01">
                         </div>
                     </div>
                 </div>
@@ -363,7 +371,7 @@
                         <label>权衡轻重：</label>
                         <select id="balanceWeight">
                             <option value="0">无</option>
-                            <option value="25">有</option>
+                            <option value="25"selected>有</option>
                         </select>
                     </div>
                     <div class="input-group">
@@ -380,15 +388,15 @@
                         <div class="collapsible-content">
                             <div class="input-group">
                                 <label>雷魔灵基础加成：</label>
-                                <input type="number" id="thunderSpirit" value="10" min="0" step="0.01">
+                                <input type="number" id="thunderSpirit" value="6" min="0" step="0.01">
                             </div>
                             <div class="input-group">
                                 <label>超能共生：</label>
-                                <input type="number" id="superEnergy" value="53" min="0" step="0.01">
+                                <input type="number" id="superEnergy" value="52.4" min="0" step="0.01">
                             </div>
                             <div class="input-group">
                                 <label>魔灵之友：</label>
-                                <input type="number" id="spiritFriend" value="56" min="0" step="0.01">
+                                <input type="number" id="spiritFriend" value="55.4" min="0" step="0.01">
                             </div>
                             <div class="input-group">
                                 <label>契约：</label>
@@ -396,13 +404,13 @@
                             </div>
                             <div class="input-group">
                                 <label>其他：</label>
-                                <input type="number" id="otherSpirit" value="6" min="0" step="0.01">
+                                <input type="number" id="otherSpirit" value="9" min="0" step="0.01">
                             </div>
                             <div class="input-group">
                                 <label>源泉：</label>
                                 <select id="spring">
-                                    <option value="100">无</option>
-                                    <option value="130" selected>有</option>
+                                    <option value="100"selected>无</option>
+                                    <option value="130" >有</option>
                                 </select>
                             </div>
                         </div>
@@ -425,15 +433,15 @@
                 <div class="collapsible-content">
                     <div class="input-group">
                         <label>装备冷却：</label>
-                        <input type="number" id="equipCD" value="10" min="0" step="0.01">
+                        <input type="number" id="equipCD" value="14" min="0" step="0.01">
                     </div>
                     <div class="input-group">
                         <label>天赋冷却：</label>
-                        <input type="number" id="talentCD" value="5" min="0" step="0.01">
+                        <input type="number" id="talentCD" value="16" min="0" step="0.01">
                     </div>
                     <div class="input-group">
                         <label>其他冷却：</label>
-                        <input type="number" id="otherCD" value="1" min="0" step="0.01">
+                        <input type="number" id="otherCD" value="0" min="0" step="0.01">
                     </div>
                 </div>
             </div>
@@ -441,17 +449,28 @@
 
         <!-- 公共参数 -->
         <div class="input-group">
-            <label>灵动祝福层数：</label>
+            <label>灵动祝福层数：  <span class="tooltip">几层灵动祝福就填几</span></label></label>
             <input type="number" id="blessingStacks" value="4" min="0" step="1">
         </div>
         <div class="input-group">
-            <label>暴击额外条数：</label>
-            <input type="number" id="critExtra" value="2" min="0" step="1">
+            <label>暴击额外条数：
+			                    <span class="tooltip">这条指的是:狩猎之神的如果最近有暴击，额外 +10% 攻击速度 通常出现在石板上</span></label>
+            <input type="number" id="critExtra" value="3" min="0" step="1">
         </div>
         <div class="input-group">
             <label>狂人1特性（%）：</label>
             <input type="number" id="madmanTrait" value="120" min="0" step="0.01">
         </div>
+
+        <!-- 使用说明部分 -->
+<h2>使用说明</h2>
+<div class="instructions">
+    <p>1. 计算公式:（1+（面板攻速+灵动祝福攻速）×特性冷却）×（1+面板额外攻速×特性冷却）×（1+面板冷却）</p> 注:暴击额外只要输入条数就已计算
+    <p>2. 看面板数据请切换成暴走巨刃/专注射击等不带额外攻速加成的技能, 避免失真</p>
+    <p>3. 测试方法: 买个带附加凋零伤害的群星辉陨, 点出肮脏技巧或者石板带肮脏技巧, 拿下所有带伤害技能, 特别是加持类技能容易漏掉, 打木桩让他自己开炸, 保持15层凋零的就是2档, 一秒15下, 保持30层凋零的就是1档, 1秒30下</p>
+    <p style="color: #d32f2f; font-size: 1em; font-weight: bold;">4. 由于小数点关系，计算好之后请务必实测!</p>
+	    <p style="color: #d32f2f; font-size: 1em; font-weight: bold;">秋霜玉剑</p>
+</div>
     </div>
 
     <script>
@@ -541,11 +560,11 @@
             static calculateCooling(values, finalAttackSpeed) {
                 const part1 = 1 + (values.attackSpeed + values.blessingStacks * 0.04) * values.madmanTrait;
                 const part2 = (1 + finalAttackSpeed * values.madmanTrait) * (1 + values.cooling);
-                return part1 * part2 - 1;
+                return part1 * part2 ;
             }
 
             static formatResult(value) {
-                return (value * 100).toFixed(2).replace(/\.00$/, '') + '%';
+                return (value * 100).toFixed(2) + '%';
             }
         }
 
@@ -592,10 +611,30 @@
                 
                 // 添加冷却计算过程的注释
                 const calculationProcess = `
-冷却时间 = ((1 + (${values.attackSpeed * 100}% + ${values.blessingStacks} * 4%) * ${values.madmanTrait * 100}%) * ((1 + ${(attackSpeed * 100).toFixed(2)}% * ${values.madmanTrait * 100}%) * (1 + ${values.cooling * 100}%)) - 1) = ${(cooling * 100).toFixed(2)}%
+冷却时间 = (1 + (${(values.attackSpeed * 100).toFixed(2)}% + ${values.blessingStacks} * 4%) * ${values.madmanTrait * 100}%) * (1 + ${(attackSpeed * 100).toFixed(2)}% * ${values.madmanTrait * 100}%)  * (1 + ${values.cooling * 100}%) = ${(cooling * 100).toFixed(2)}%
 `;
 
                 document.getElementById('coolingCalculation').textContent = calculationProcess;
+                
+                // 计算并显示每秒攻击次数
+                this.calculateAndShowDPS(cooling);
+            },
+
+            calculateAndShowDPS(cooling) {
+                const dps =Math.floor( 1 / (0.3 / cooling));
+                
+                const dpsElement = document.getElementById('damagePerSecond');
+                dpsElement.innerHTML = `= (${dps.toFixed(0)})`;
+                
+                if (dps > 15 && dps < 30) {
+                    dpsElement.textContent = ` (${dps.toFixed(0)}) 2档/每秒攻击15下, 自爆裂循环`;
+                    dpsElement.className = 'damage-per-second damage-per-second-error';
+                } else if (dps >= 30) {
+                    dpsElement.textContent = ` (${dps.toFixed(0)}) 1档/每秒攻击30下`;
+                    dpsElement.className = 'damage-per-second damage-per-second-error';
+                } else {
+                    dpsElement.className = 'damage-per-second';
+                }
             },
 
             init() {
@@ -654,37 +693,37 @@
                 document.getElementById('resetButton').addEventListener('click', () => {
                     // 恢复基础模式的默认值
                     if (GameCalculator.currentMode === 'basic') {
-                        GameCalculator.inputs.basic.attackSpeed.value = 300;
-                        GameCalculator.inputs.basic.extraAttackSpeed.value = 42;
-                        GameCalculator.inputs.basic.cooling.value = 16;
+                        GameCalculator.inputs.basic.attackSpeed.value = 171;
+                        GameCalculator.inputs.basic.extraAttackSpeed.value = 46;
+                        GameCalculator.inputs.basic.cooling.value = 30;
                     } else {
                         // 恢复模拟模式的默认值
-                        document.getElementById('equipAS').value = 100;
-                        document.getElementById('talentAS').value = 50;
-                        document.getElementById('godhoodAS').value = 30;
-                        document.getElementById('contractAS').value = 20;
-                        document.getElementById('memoryAS').value = 80;
-                        document.getElementById('candleAS').value = 20;
+                        document.getElementById('equipAS').value = 50;
+                        document.getElementById('talentAS').value = 42;
+                        document.getElementById('godhoodAS').value = 3;
+                        document.getElementById('contractAS').value = 32;
+                        document.getElementById('memoryAS').value = 44;
+                        document.getElementById('candleAS').value = 0;
                         
-                        document.getElementById('balanceWeight').selectedIndex = 0;
+                        document.getElementById('balanceWeight').selectedIndex = 1;
                         document.getElementById('spiritBonus').textContent = '0%';
                         document.getElementById('otherBonus').value = 0;
                         
-                        document.getElementById('thunderSpirit').value = 10;
-                        document.getElementById('superEnergy').value = 53;
-                        document.getElementById('spiritFriend').value = 56;
+                        document.getElementById('thunderSpirit').value = 6;
+                        document.getElementById('superEnergy').value = 52.4;
+                        document.getElementById('spiritFriend').value = 55.4;
                         document.getElementById('spiritContract').value = 68;
-                        document.getElementById('otherSpirit').value = 6;
+                        document.getElementById('otherSpirit').value = 9;
                         document.getElementById('spring').selectedIndex = 1;
                         
-                        document.getElementById('equipCD').value = 10;
-                        document.getElementById('talentCD').value = 5;
-                        document.getElementById('otherCD').value = 1;
+                        document.getElementById('equipCD').value = 30;
+                        document.getElementById('talentCD').value = 0;
+                        document.getElementById('otherCD').value = 0;
                     }
                     
                     // 恢复公共参数的默认值
                     GameCalculator.inputs.common.blessingStacks.value = 4;
-                    GameCalculator.inputs.common.critExtra.value = 2;
+                    GameCalculator.inputs.common.critExtra.value = 3;
                     GameCalculator.inputs.common.madmanTrait.value = 120;
                     
                     // 更新计算结果
